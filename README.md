@@ -26,3 +26,4 @@ Current state of the art:
 ### Resources 
 - brainstorming doc: https://docs.google.com/document/d/1jN3kGP3s32hYwgV7EreyDe6fqRPENOUnEqr1nzrfgfg/edit?usp=sharing
 - openMM (Python package for custom MD): http://docs.openmm.org/latest/userguide/index.html
+- relevant literature: https://docs.google.com/document/d/1DsM0CMgnx2SXJ9afiPaZR56UdCWc2rR5cjWqxXdKos4/edit?usp=sharing
