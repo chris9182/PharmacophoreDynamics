@@ -22,6 +22,16 @@ Current state of the art:
 - MD-simulation: Simulating the behavior of two proteins in close proximity can often be used to 
     retrieve more information on the interaction of these proteins. Even though the results obtained
     are quite detailed, these simulations may take a long time.  
+  
+### Tool MUST HAVEs
+- easy application without other data requirements
+- easy setup with input of say two PDB files (we can make some restrictions there in terms of content)
+- decent performance in terms of speed and accuracy (taking into account the trade-off) to existing methods
+- applicable for high-throughput screening
+- [optional] user interface for analysis
+- [optional] user interface for setup of screening
+- [optional] user interface for setup of prediction
+- [optional] user interface for further more detailed analysis (i.e. MD)
 
 ### Resources 
 - brainstorming doc: https://docs.google.com/document/d/1jN3kGP3s32hYwgV7EreyDe6fqRPENOUnEqr1nzrfgfg/edit?usp=sharing
