@@ -16,7 +16,12 @@ Current state of the art:
 - Paratope-epitope prediction: Recently a lot of deep learning methods were published. They are able
     to screen a large library of molecules in a short period of time, while indicating possible interactions
     and interaction sites. However, they too require a large high quality dataset for training the models. 
-    Therefore, one might argue that they are not universally and easily applicable. 
+    Therefore, one might argue that they are not universally and easily applicable.
+- Protein-protein docking: Aims to figure out in which way the proteins are interacting with each other. 
+    These experiments are often hard to set up and require extensive expert knowledge. 
+- MD-simulation: Simulating the behavior of two proteins in close proximity can often be used to 
+    retrieve more information on the interaction of these proteins. Even though the results obtained
+    are quite detailed, these simulations may take a long time.  
 
 ### Resources 
 - brainstorming doc: https://docs.google.com/document/d/1jN3kGP3s32hYwgV7EreyDe6fqRPENOUnEqr1nzrfgfg/edit?usp=sharing
