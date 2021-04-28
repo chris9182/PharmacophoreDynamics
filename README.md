@@ -28,6 +28,7 @@ Current state of the art:
 - easy setup with input of say two PDB files (we can make some restrictions there in terms of content)
 - decent performance in terms of speed and accuracy (taking into account the trade-off) to existing methods
 - applicable for high-throughput screening
+- ranking of solutions
 - [optional] user interface for analysis
 - [optional] user interface for setup of screening
 - [optional] user interface for setup of prediction
