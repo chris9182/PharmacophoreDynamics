@@ -76,7 +76,7 @@ def readPDBFromString(string: str) -> Chem.BasicMolecule:
     return protein
 
 
-def readPDBFromRSCB(pdbCode: str) -> (Chem.BasicMolecule, None):
+def readPDBFromRSCB(pdbCode: str) -> Chem.BasicMolecule:
     from requests import request
 
     r = request('GET', 'https://files.rcsb.org/download/{pdb}.pdb'.format(pdb=pdbCode))
