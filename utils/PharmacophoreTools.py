@@ -25,14 +25,14 @@ FEATURE_TYPES = {
 FEATURE_TYPES_INVERSE = {value: key for key, value in FEATURE_TYPES.items()}
 
 
-def save_pharmacophore(pharmacophore: Pharm.BasicPharmacophore, path: str):
+def savePharmacophore(pharmacophore: Pharm.BasicPharmacophore, path: str):
     # print("Saving Pharmacophore")
     writer = Pharm.FilePMLFeatureContainerWriter(path)
     writer.write(pharmacophore)
     writer.close()
 
 
-def load_pml_pharmacophore(path):
+def loadPMLPharmacophore(path):
     # print("Loading pharmacophore from %s" % path)
     ifs = Base.FileIOStream(path)
     r = Pharm.PMLPharmacophoreReader(ifs)
@@ -44,11 +44,11 @@ def load_pml_pharmacophore(path):
         return False
 
 
-def get_interaction_pharmacophore(protein: Chem.BasicMolecule,
-                                  ligand: Chem.BasicMolecule,
-                                  exclusion_volumes=True,
-                                  fuzzy=False,
-                                  ) -> Pharm.BasicPharmacophore:
+def getInteractionPharmacophore(protein: Chem.BasicMolecule,
+                                ligand: Chem.BasicMolecule,
+                                exclusion_volumes=True,
+                                fuzzy=False,
+                                ) -> Pharm.BasicPharmacophore:
     """
     Create an interaction pharmacophore between a given binding site and a ligand. Both of them need to have matching
     3D coordinates.
@@ -75,7 +75,7 @@ def get_interaction_pharmacophore(protein: Chem.BasicMolecule,
     return int_pharm
 
 
-def get_pharmacophore(mol: Chem.BasicMolecule, fuzzy=True) -> Pharm.BasicPharmacophore:
+def getPharmacophore(mol: Chem.BasicMolecule, fuzzy=True) -> Pharm.BasicPharmacophore:
     """
 
     :param mol: Molecule to generate pharmacophore from.

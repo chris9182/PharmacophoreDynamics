@@ -6,7 +6,7 @@ import CDPL.Util as Util
 import CDPL.Math as Math
 import CDPL.Pharm as Pharm
 import numpy as np
-from PharmacophoreTools import get_pharmacophore
+from PharmacophoreTools import getPharmacophore
 from collections import Iterable
 
 
@@ -206,15 +206,17 @@ def neutralise(mol: Chem.BasicMolecule) -> Chem.BasicMolecule:
     return mol
 
 
-def sanitize_mol(mol: Chem.BasicMolecule) -> Chem.BasicMolecule:
+def sanitize_mol(mol: Chem.BasicMolecule, makeHydrogenComplete=False) -> Chem.BasicMolecule:
     Chem.calcImplicitHydrogenCounts(mol, True)
     Chem.perceiveHybridizationStates(mol, True)
     Chem.perceiveComponents(mol, True)
     Chem.perceiveSSSR(mol, True)
     Chem.setRingFlags(mol, True)
     Chem.setAromaticityFlags(mol, True)
-    # Chem.makeHydrogenComplete(mol)
-    # Chem.calcImplicitHydrogenCounts(mol, True)
+    if makeHydrogenComplete:
+        Chem.makeHydrogenComplete(mol)
+        Chem.calcImplicitHydrogenCounts(mol, True)
+        Chem.generateHydrogen3DCoordinates(mol, True)
     return mol
 
 
@@ -545,7 +547,7 @@ def calculateStandardProperties(mol):
     for m in mol:
         Chem.calcTopologicalDistanceMatrix(m, True)
 
-        p = get_pharmacophore(m)
+        p = getPharmacophore(m)
         hba, hbd = 0, 0
         for f in p:
             if Pharm.getType(f) == Pharm.FeatureType.H_BOND_ACCEPTOR:

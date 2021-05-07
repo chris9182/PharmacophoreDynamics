@@ -5,7 +5,7 @@ import CDPL.Math as Math
 from typing import List
 from scipy.spatial.transform import Rotation
 
-from PharmacophoreTools import get_pharmacophore
+from PharmacophoreTools import getPharmacophore
 from ProteinTools import THREE_LETTER_AMINO_ACID_CODES
 from MathTools import *
 
@@ -17,10 +17,13 @@ class Protein(Chem.BasicMolecule):
         self.shapeFunc: Shape.GaussianShapeFunction = Shape.GaussianShapeFunction()
         self.coordinates: Math.Vector3DArray = Math.Vector3DArray()
         self.ligands: List[Chem.BasicMolecule] = []
+        self.surfaceAtoms: Chem.BasicMolecule = Chem.BasicMolecule()
 
         super(Protein, self).__init__()
         if structure:
+            from MoleculeTools import sanitize_mol
             self.assign(structure)
+            sanitize_mol(self, makeHydrogenComplete=True)
 
     def fromFile(self, path: str) -> Chem.BasicMolecule:
         from ProteinTools import readPDBFromFile
@@ -40,12 +43,12 @@ class Protein(Chem.BasicMolecule):
         self.assign(readPDBFromRSCB(pdbCode))
         return self
 
-    def separateLigandFromProtein(self, keep: bool = True, removeWater: bool = True) -> None:
+    def removeLigands(self, keep: bool = False, removeWater: bool = True) -> None:
         """
         Removes all entities from the protein which are not an amino acid --> usually a ligand.
         Be careful with peptides and covalently bound ligands! These will face a different behaviour and might cause
         unexpected results!
-        :param keep: Whether to keep the removed ligands stored in the ligand property of just remove them.
+        :param keep: Whether to keep the removed ligands stored in the ligand property or simply remove them.
         :param removeWater: If true, removes the water molecules
         :return:
         """
@@ -78,10 +81,11 @@ class Protein(Chem.BasicMolecule):
         for i in reversed(atomsToRemoveFromProtein):
             self.removeAtom(i)
 
-    def getGaussianShape(self, addFeatures: bool = False, maxOrder: int = 1) -> Shape.GaussianShape:
+    def getGaussianShape(self, addFeatures: bool = False, maxOrder: int = 4) -> Shape.GaussianShape:
+        self.shape.clear()
         Shape.generateGaussianShape(self, self.shape)
         if addFeatures:
-            ph4 = get_pharmacophore(self)
+            ph4 = getPharmacophore(self)
             Shape.generateGaussianShape(ph4, self.shape, True)  # add pharmacophore shape to molecule shape
         self.shapeFunc.setMaxOrder(maxOrder)
         self.shapeFunc.setShape(self.shape)
@@ -115,12 +119,22 @@ class Protein(Chem.BasicMolecule):
 
         return translatedCoords
 
-    def getSurfaceExposedAtoms(self) -> List[Chem.BasicAtom]:  # TODO
+    def getSurfaceExposedAtoms(self, copy=True) -> Chem.BasicMolecule:
         """
         Get a list of CDPL Molecules located on the protein surface.
+        :param copy: Whether to return a copy of the surface atoms or the surface atom object itself.
         :return:
         """
-        raise NotImplementedError
+        from ProteinTools import getSurfaceAtoms
+
+        self.surfaceAtoms.assign(getSurfaceAtoms(self))
+
+        if copy:
+            surfaceAtoms = Chem.BasicMolecule()
+            surfaceAtoms.assign(self.surfaceAtoms)
+            return  surfaceAtoms
+
+        return self.surfaceAtoms
 
     def generateSurfacePoints(self, scaleFactor: float = 1, density: float = 1) -> Math.Vector3DArray:
         """

@@ -57,10 +57,12 @@ SINGLE_LETTER_AMINO_ACID_CODES = (  # same order as three letter codes
 
 def readPDBFromStream(stream: Base.IOStream):
     from Protein import Protein
+    from MoleculeTools import sanitize_mol
 
     r = Biomol.PDBMoleculeReader(stream)
     mol = Chem.BasicMolecule()
     r.read(mol)
+    sanitize_mol(mol, makeHydrogenComplete=True)
     return Protein(mol)
 
 
@@ -92,7 +94,6 @@ def writePDB(path: str) -> None:
     w.close()
 
 
-# TODO: Change method to retrieve ligands
 def getMoleculeFromAtom(atom: Chem.BasicAtom, protein: Chem.BasicMolecule) -> (Chem.BasicMolecule, list):
     """
     Given an atom and a protein structure, find the ligand the atom corresponds to.
@@ -127,3 +128,12 @@ def getMoleculeFromAtom(atom: Chem.BasicAtom, protein: Chem.BasicMolecule) -> (C
     mol = Chem.BasicMolecule()
     mol.assign(ligand)
     return mol, atomsToRemove
+
+
+def getSurfaceAtoms(mol):
+    surfaceATomExtractor = Chem.SurfaceAtomExtractor()
+    f = Chem.Fragment()
+    surfaceATomExtractor.extract(mol, mol, f)
+    surfaceAtoms = Chem.BasicMolecule()
+    surfaceAtoms.assign(f)
+    return surfaceAtoms
