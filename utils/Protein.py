@@ -23,7 +23,12 @@ class Protein(Chem.BasicMolecule):
         if structure:
             from MoleculeTools import sanitize_mol
             self.assign(structure)
-            sanitize_mol(self, makeHydrogenComplete=True)
+            # sanitize_mol(self, makeHydrogenComplete=True)
+
+    def prepare(self):
+        from MoleculeTools import sanitize_mol
+        sanitize_mol(self, makeHydrogenComplete=True)
+        Chem.generateHydrogen3DCoordinates(self, True)
 
     def fromFile(self, path: str) -> Chem.BasicMolecule:
         from ProteinTools import readPDBFromFile
@@ -42,6 +47,12 @@ class Protein(Chem.BasicMolecule):
 
         self.assign(readPDBFromRSCB(pdbCode))
         return self
+
+    def toFile(self, path: str) -> str:
+        from ProteinTools import writePDB
+
+        writePDB(path, self)
+        return path
 
     def removeLigands(self, keep: bool = False, removeWater: bool = True) -> None:
         """
@@ -99,7 +110,7 @@ class Protein(Chem.BasicMolecule):
         rotatedCoords = rotate3DObject(self.getCoordinates(), rotMatrix)
 
         if inplace:
-            Chem.set3DCoordinates(rotatedCoords)
+            Chem.set3DCoordinates(self, rotatedCoords)
 
         return rotatedCoords
 
@@ -115,7 +126,7 @@ class Protein(Chem.BasicMolecule):
         translatedCoords = translate3DObject(self.getCoordinates(), direction)
 
         if inplace:
-            Chem.set3DCoordinates(translatedCoords)
+            Chem.set3DCoordinates(self, translatedCoords)
 
         return translatedCoords
 

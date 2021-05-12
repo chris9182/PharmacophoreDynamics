@@ -88,9 +88,10 @@ def readPDBFromRSCB(pdbCode: str) -> Chem.BasicMolecule:
         return None
 
 
-def writePDB(path: str) -> None:
-    w = Biomol.FilePDBMolecularGraphWriter(path)
-    w.write()
+def writePDB(path: str, protein: Chem.BasicMolecule) -> None:
+    s = Base.FileIOStream(path)
+    w = Biomol.PDBMolecularGraphWriter(s)
+    w.write(protein)
     w.close()
 
 
