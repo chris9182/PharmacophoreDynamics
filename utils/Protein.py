@@ -25,10 +25,14 @@ class Protein(Chem.BasicMolecule):
             self.assign(structure)
             # sanitize_mol(self, makeHydrogenComplete=True)
 
-    def prepare(self):
+    def prepare(self, removeLigands=True):
         from MoleculeTools import sanitize_mol
+
         sanitize_mol(self, makeHydrogenComplete=True)
         Chem.generateHydrogen3DCoordinates(self, True)
+
+        if removeLigands:
+            self.removeLigands()
 
     def fromFile(self, path: str) -> Chem.BasicMolecule:
         from ProteinTools import readPDBFromFile

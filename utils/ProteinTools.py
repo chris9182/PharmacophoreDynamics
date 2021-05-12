@@ -95,6 +95,18 @@ def writePDB(path: str, protein: Chem.BasicMolecule) -> None:
     w.close()
 
 
+def prepareProtein(protein, removeLigands=True, removeWater=True):
+    from MoleculeTools import sanitize_mol
+
+    sanitize_mol(self, makeHydrogenComplete=True)
+    Chem.generateHydrogen3DCoordinates(self, True)
+
+    if removeLigands:
+        self.removeLigands(removeWater=removeWater)
+
+    return protein
+
+
 def getMoleculeFromAtom(atom: Chem.BasicAtom, protein: Chem.BasicMolecule) -> (Chem.BasicMolecule, list):
     """
     Given an atom and a protein structure, find the ligand the atom corresponds to.
