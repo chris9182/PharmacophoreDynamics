@@ -47,7 +47,8 @@ def custom_draw_geometry(pcdarr):
     vis.run()
     vis.destroy_window()
 
-def create_spheres(data,color, radius=0.5):
+
+def create_spheres(data, color, radius=0.5):
     """
     Create a list of spheres from a 2D numpy array
 
@@ -62,6 +63,7 @@ def create_spheres(data,color, radius=0.5):
         mesh_sphere.translate(c_pt)
         vis_list.append(mesh_sphere)
     return vis_list
+
 
 def encodePhaInfo(surface, pha, invert=False):
     types = [3, 4, 5, 6]
@@ -119,10 +121,10 @@ if __name__ == '__main__':
     # exit()
     print("loading molecules")
 
-    # name1 = "1K74_l_b"
-    # name2 = "1K74_r_b"
-    name1 = "1KTZ_l_b"
-    name2 = "1KTZ_r_b"
+    name1 = "1K74_l_b"
+    name2 = "1K74_r_b"
+    # name1 = "1KTZ_l_b"
+    # name2 = "1KTZ_r_b"
 
     mol1 = ProteinTools.readPDBFromFile("structures/" + name1 + ".pdb")
     mol2 = ProteinTools.readPDBFromFile("structures/" + name2 + ".pdb")
@@ -175,8 +177,8 @@ if __name__ == '__main__':
     # o3d.visualization.draw_geometries([pcd1, pcd2])
     # exit()
     '''
-    mesh1 = o3d.io.read_triangle_mesh("compute/1K74_l_b.ply")
-    mesh2 = o3d.io.read_triangle_mesh("compute/1K74_r_b.ply")
+    mesh1 = o3d.io.read_triangle_mesh("compute/" + name1 + ".ply")
+    mesh2 = o3d.io.read_triangle_mesh("compute/" + name2 + ".ply")
     mesh1.compute_vertex_normals()
     mesh2.compute_vertex_normals()
     pcd1 = o3d.geometry.PointCloud()
@@ -212,8 +214,8 @@ if __name__ == '__main__':
 
     normals1 = np.concatenate((np.array(pcd1.normals), np.array(kps1.normals)), axis=0)
     normals2 = np.concatenate((np.array(pcd2.normals), np.array(kps2.normals)), axis=0)
-    pcd1s=o3d.geometry.PointCloud()
-    pcd2s=o3d.geometry.PointCloud()
+    pcd1s = o3d.geometry.PointCloud()
+    pcd2s = o3d.geometry.PointCloud()
     pcd1s.points = o3d.utility.Vector3dVector(surface1np)
     pcd2s.points = o3d.utility.Vector3dVector(surface2np)
     pcd1s.normals = o3d.utility.Vector3dVector(normals1)
@@ -223,18 +225,18 @@ if __name__ == '__main__':
     # pcd2 = o3d.geometry.keypoint.compute_iss_keypoints(pcd2)
 
     print("computing point encoding")
+    # rad = 3
+    rad = 3
+    '''
     radLocal = 0.5
-    rad = 2
     chainLength = int(rad / radLocal)
-
     f1 = o3d.pipelines.registration.compute_fpfh_feature(
         pcd1s, o3d.geometry.KDTreeSearchParamNNChain(radiusLocal=radLocal, chainLength=chainLength))
     f2 = o3d.pipelines.registration.compute_fpfh_feature(
         pcd2s, o3d.geometry.KDTreeSearchParamNNChain(radiusLocal=radLocal, chainLength=chainLength))
     '''
-    f1 = o3d.pipelines.registration.compute_fpfh_feature(pcd1, o3d.geometry.KDTreeSearchParamRadius(radius=rad))
-    f2 = o3d.pipelines.registration.compute_fpfh_feature(pcd2, o3d.geometry.KDTreeSearchParamRadius(radius=rad))
-    '''
+    f1 = o3d.pipelines.registration.compute_fpfh_feature(pcd1s, o3d.geometry.KDTreeSearchParamRadius(radius=rad))
+    f2 = o3d.pipelines.registration.compute_fpfh_feature(pcd2s, o3d.geometry.KDTreeSearchParamRadius(radius=rad))
 
     hist1 = np.array(f1.data).transpose()
     print(hist1.shape)
@@ -268,12 +270,13 @@ if __name__ == '__main__':
 
     # surface1np = np.array(pcd1.points)
     # surface2np = np.array(pcd2.points)
+    '''
     print("computing pha enc")
     pha1 = PhaTools.getPharmacophore(mol1)
     pha2 = PhaTools.getPharmacophore(mol2)
     surfacePhaEncoding1 = encodePhaInfo2(surface1np, pha1)
     surfacePhaEncoding2 = encodePhaInfo2(surface2np, pha2, True)
-
+    '''
     print("computing distances")
     distancesHist = euclidean_distances(hist1, hist2)
     eucDist1 = euclidean_distances(surface1np)
@@ -282,24 +285,24 @@ if __name__ == '__main__':
     print(hist1[2])
     print(hist2[100])
     print(distancesHist[2][100])
-    #maxDiff = 2
-    #maxDist = 15
-    #maxHistDiff = 65
+    maxDiff = 1
+    maxDist = 15
+    maxHistDiff = 35
 
-    maxDiff = 4
-    maxDist = 20
-    maxHistDiff = 40
+    # maxDiff = 2
+    # maxDist = 15
+    # maxHistDiff = 65
 
     print("computing graph")
     distleni = len(surface1np)
     distlenj = len(surface2np)
     pairs = []
     for i in range(distleni):
-        enc1 = surfacePhaEncoding1[i]
+        # enc1 = surfacePhaEncoding1[i]
         for j in range(distlenj):
             histDist = distancesHist[i][j]
-            enc2 = surfacePhaEncoding2[j]
-            if histDist < maxHistDiff and np.array_equal(enc1, enc2):
+            # enc2 = surfacePhaEncoding2[j]
+            if histDist < maxHistDiff:  # and np.array_equal(enc1, enc2):
                 pairs.append((i, j))
 
     distlenp = len(pairs)
@@ -319,7 +322,7 @@ if __name__ == '__main__':
             if abs(dist1 - dist2) < maxDiff:
                 mat[i, j] = 1
                 mat[j, i] = 1
-        b = ("computing row: " + str(i) + " of " + str(distlenp))
+        b = ("computing row: " + str(i + 1) + " of " + str(distlenp))
         sys.stdout.write('\r' + b)
 
     print(mat.shape)
@@ -349,16 +352,20 @@ if __name__ == '__main__':
         # clique = clique.max_clique(gr)
         print(len(intArr))
         print("setting colors")
-        sphere1 = create_spheres(np.array(pcd1s.points),[0, 0, 1])
-        sphere2 = create_spheres(np.array(pcd2s.points),[1, 0, 0])
+        sphere1 = create_spheres(np.array(pcd1s.points), [0, 0, 1], rad)
+        sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad)
+        sphere1p = []
+        sphere2p = []
         for v in intArr:
             p = pairs[v]  # minus 1 because scipy outputs with 1 based array
             sphere1[p[0]].paint_uniform_color([0, 0, 0])
             sphere2[p[1]].paint_uniform_color([0, 0, 0])
+            sphere1p.append(sphere1[p[0]])
+            sphere2p.append(sphere2[p[1]])
 
-        visList=[pcd1, pcd2]
-        visList.extend(sphere1)
-        visList.extend(sphere2)
+        visList = [pcd1, pcd2]
+        visList.extend(sphere1p)
+        visList.extend(sphere2p)
         o3d.visualization.draw_geometries(visList)
         # custom_draw_geometry([pcd1, pcd2,pcd1s,pcd2s])
         for ind in intArr:
