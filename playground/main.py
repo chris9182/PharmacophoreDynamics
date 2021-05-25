@@ -20,6 +20,7 @@ from sklearn.metrics.pairwise import cosine_distances
 from sklearn_extra.cluster import KMedoids
 import ProteinTools
 import PharmacophoreTools as PhaTools
+from Protein import Protein
 from simple_xmeans import XMeans
 import networkx as nx
 from networkx.algorithms.approximation import clique
@@ -65,6 +66,21 @@ def create_spheres(data, color, radius=0.5):
     return vis_list
 
 
+def create_pha_spheres(pha, radius=0.5):
+    colors = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 1, 1], [0, 1, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1], [1, 1, 1],
+              [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+    vis_list = []
+    for feature in pha:
+        featureType = Pharm.getType(feature)
+        featureCoords = np.array(Chem.get3DCoordinates(feature))
+        mesh_sphere = o3d.geometry.TriangleMesh.create_sphere(radius=radius)
+        mesh_sphere.compute_vertex_normals()
+        mesh_sphere.paint_uniform_color(np.array(colors[featureType]))
+        mesh_sphere.translate(featureCoords)
+        vis_list.append(mesh_sphere)
+    return vis_list
+
+
 def encodePhaInfo(surface, pha, invert=False):
     types = [3, 4, 5, 6]
     invertedTypes = [4, 3, 6, 5]
@@ -90,7 +106,9 @@ def encodePhaInfo2(surface, pha, invert=False):
     invertedTypes = [-1, -1, -1, 1, 0, 3, 2, -1, -1, -1, -1, -1]
     typeCount = 4
     encoding = np.full((len(surface), typeCount), np.inf)
+    count=0
     for feature in pha:
+        count=count+1
         featureType = Pharm.getType(feature)
         if invert:
             index = invertedTypes[featureType]
@@ -103,6 +121,7 @@ def encodePhaInfo2(surface, pha, invert=False):
             pt = surface[i]
             dist = np.linalg.norm(pt - featureCoords)
             encoding[i][index] = min(encoding[i][index], dist)
+    print(count)
     for enc in encoding:
         minV = 0
         for i in range(typeCount):
@@ -121,17 +140,24 @@ if __name__ == '__main__':
     # exit()
     print("loading molecules")
 
-    name1 = "1K74_l_b"
-    name2 = "1K74_r_b"
-    # name1 = "1KTZ_l_b"
-    # name2 = "1KTZ_r_b"
+    #name1 = "1K74_l_b"
+    #name2 = "1K74_r_b"
+    #name1 = "1KTZ_l_b"
+    #name2 = "1KTZ_r_b"
+    name1 = "1MAH_l_b"
+    name2 = "1MAH_r_b"
 
-    mol1 = ProteinTools.readPDBFromFile("structures/" + name1 + ".pdb")
-    mol2 = ProteinTools.readPDBFromFile("structures/" + name2 + ".pdb")
+
+    mol1 = Protein()
+    mol1.fromFile("structures/" + name1 + ".pdb")
+    mol2 = Protein()
+    mol2.fromFile("structures/" + name2 + ".pdb")
     mol1.prepare()
     mol2.prepare()
     Biomol.FilePDBMolecularGraphWriter("compute/" + name1 + ".pdb").write(mol1)
     Biomol.FilePDBMolecularGraphWriter("compute/" + name2 + ".pdb").write(mol2)
+    #ProteinTools.writePDB("compute/" + name1 + ".pdb", mol1)
+    #ProteinTools.writePDB("compute/" + name2 + ".pdb", mol2)
 
     print("computing molecule surface")
 
@@ -226,7 +252,7 @@ if __name__ == '__main__':
 
     print("computing point encoding")
     # rad = 3
-    rad = 3
+    rad = 5
     '''
     radLocal = 0.5
     chainLength = int(rad / radLocal)
@@ -242,7 +268,14 @@ if __name__ == '__main__':
     print(hist1.shape)
     hist2 = np.array(f2.data).transpose()
     print(hist2.shape)
-    '''
+
+    surface1np = surface1np[-len(kps1.points):, :]
+    surface2np = surface2np[-len(kps2.points):, :]
+    normals1 = np.array(pcd1.normals)[-len(kps1.points):, :]
+    normals2 = np.array(pcd2.normals)[-len(kps2.points):, :]
+    hist1 = hist1[-len(kps1.points):, :]
+    hist2 = hist2[-len(kps2.points):, :]
+
     portion = 1
     choice1 = np.random.choice(surface1np.shape[0], int(len(surface1np) / portion), replace=False)
     choice2 = np.random.choice(surface2np.shape[0], int(len(surface2np) / portion), replace=False)
@@ -252,14 +285,6 @@ if __name__ == '__main__':
     normals2 = np.array(pcd2.normals)[choice2, :]
     hist1 = hist1[choice1, :]
     hist2 = hist2[choice2, :]
-    '''
-
-    surface1np = surface1np[-len(kps1.points):, :]
-    surface2np = surface2np[-len(kps2.points):, :]
-    normals1 = np.array(pcd1.normals)[-len(kps1.points):, :]
-    normals2 = np.array(pcd2.normals)[-len(kps2.points):, :]
-    hist1 = hist1[-len(kps1.points):, :]
-    hist2 = hist2[-len(kps2.points):, :]
 
     pcd1s.points = o3d.utility.Vector3dVector(surface1np)
     pcd2s.points = o3d.utility.Vector3dVector(surface2np)
@@ -270,13 +295,17 @@ if __name__ == '__main__':
 
     # surface1np = np.array(pcd1.points)
     # surface2np = np.array(pcd2.points)
+
     '''
     print("computing pha enc")
     pha1 = PhaTools.getPharmacophore(mol1)
     pha2 = PhaTools.getPharmacophore(mol2)
     surfacePhaEncoding1 = encodePhaInfo2(surface1np, pha1)
     surfacePhaEncoding2 = encodePhaInfo2(surface2np, pha2, True)
+    spheresp1 = create_pha_spheres(pha1)
+    spheresp2 = create_pha_spheres(pha2)
     '''
+
     print("computing distances")
     distancesHist = euclidean_distances(hist1, hist2)
     eucDist1 = euclidean_distances(surface1np)
@@ -285,9 +314,9 @@ if __name__ == '__main__':
     print(hist1[2])
     print(hist2[100])
     print(distancesHist[2][100])
-    maxDiff = 1
+    maxDiff = 2
     maxDist = 15
-    maxHistDiff = 35
+    maxHistDiff = 32
 
     # maxDiff = 2
     # maxDist = 15
@@ -298,11 +327,11 @@ if __name__ == '__main__':
     distlenj = len(surface2np)
     pairs = []
     for i in range(distleni):
-        # enc1 = surfacePhaEncoding1[i]
+        #enc1 = surfacePhaEncoding1[i]
         for j in range(distlenj):
             histDist = distancesHist[i][j]
-            # enc2 = surfacePhaEncoding2[j]
-            if histDist < maxHistDiff:  # and np.array_equal(enc1, enc2):
+            #enc2 = surfacePhaEncoding2[j]
+            if histDist < maxHistDiff: # np.array_equal(enc1, enc2):
                 pairs.append((i, j))
 
     distlenp = len(pairs)
@@ -328,6 +357,7 @@ if __name__ == '__main__':
     print(mat.shape)
     fillIn = np.count_nonzero(mat.toarray())
 
+    rad = 2
     while fillIn > 0:
         print(str(fillIn) + " out of " + str(distlenp * distlenp) + " = " + str(fillIn / (distlenp * distlenp)))
         print("writing matrix")
@@ -352,8 +382,8 @@ if __name__ == '__main__':
         # clique = clique.max_clique(gr)
         print(len(intArr))
         print("setting colors")
-        sphere1 = create_spheres(np.array(pcd1s.points), [0, 0, 1], rad)
-        sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad)
+        sphere1 = create_spheres(np.array(pcd1s.points), [0, 0, 1], rad / 2)
+        sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad / 2)
         sphere1p = []
         sphere2p = []
         for v in intArr:
@@ -366,6 +396,8 @@ if __name__ == '__main__':
         visList = [pcd1, pcd2]
         visList.extend(sphere1p)
         visList.extend(sphere2p)
+        #visList.extend(spheresp1)
+        #visList.extend(spheresp2)
         o3d.visualization.draw_geometries(visList)
         # custom_draw_geometry([pcd1, pcd2,pcd1s,pcd2s])
         for ind in intArr:
