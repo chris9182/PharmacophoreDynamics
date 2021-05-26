@@ -18,6 +18,8 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import euclidean_distances
 from sklearn.metrics.pairwise import cosine_distances
 from sklearn_extra.cluster import KMedoids
+
+import MathTools
 import ProteinTools
 import PharmacophoreTools as PhaTools
 from Protein import Protein
@@ -106,9 +108,9 @@ def encodePhaInfo2(surface, pha, invert=False):
     invertedTypes = [-1, -1, -1, 1, 0, 3, 2, -1, -1, -1, -1, -1]
     typeCount = 4
     encoding = np.full((len(surface), typeCount), np.inf)
-    count=0
+    count = 0
     for feature in pha:
-        count=count+1
+        count = count + 1
         featureType = Pharm.getType(feature)
         if invert:
             index = invertedTypes[featureType]
@@ -140,13 +142,12 @@ if __name__ == '__main__':
     # exit()
     print("loading molecules")
 
-    #name1 = "1K74_l_b"
-    #name2 = "1K74_r_b"
-    #name1 = "1KTZ_l_b"
-    #name2 = "1KTZ_r_b"
+    # name1 = "1K74_l_b"
+    # name2 = "1K74_r_b"
+    # name1 = "1KTZ_l_b"
+    # name2 = "1KTZ_r_b"
     name1 = "1MAH_l_b"
     name2 = "1MAH_r_b"
-
 
     mol1 = Protein()
     mol1.fromFile("structures/" + name1 + ".pdb")
@@ -154,10 +155,12 @@ if __name__ == '__main__':
     mol2.fromFile("structures/" + name2 + ".pdb")
     mol1.prepare()
     mol2.prepare()
+    Chem.makeHydrogenDeplete(mol1)
+    Chem.makeHydrogenDeplete(mol2)
     Biomol.FilePDBMolecularGraphWriter("compute/" + name1 + ".pdb").write(mol1)
     Biomol.FilePDBMolecularGraphWriter("compute/" + name2 + ".pdb").write(mol2)
-    #ProteinTools.writePDB("compute/" + name1 + ".pdb", mol1)
-    #ProteinTools.writePDB("compute/" + name2 + ".pdb", mol2)
+    # ProteinTools.writePDB("compute/" + name1 + ".pdb", mol1)
+    # ProteinTools.writePDB("compute/" + name2 + ".pdb", mol2)
 
     print("computing molecule surface")
 
@@ -252,7 +255,7 @@ if __name__ == '__main__':
 
     print("computing point encoding")
     # rad = 3
-    rad = 5
+    rad = 2
     '''
     radLocal = 0.5
     chainLength = int(rad / radLocal)
@@ -314,9 +317,9 @@ if __name__ == '__main__':
     print(hist1[2])
     print(hist2[100])
     print(distancesHist[2][100])
-    maxDiff = 2
+    maxDiff = 1
     maxDist = 15
-    maxHistDiff = 32
+    maxHistDiff = 30
 
     # maxDiff = 2
     # maxDist = 15
@@ -327,11 +330,11 @@ if __name__ == '__main__':
     distlenj = len(surface2np)
     pairs = []
     for i in range(distleni):
-        #enc1 = surfacePhaEncoding1[i]
+        # enc1 = surfacePhaEncoding1[i]
         for j in range(distlenj):
             histDist = distancesHist[i][j]
-            #enc2 = surfacePhaEncoding2[j]
-            if histDist < maxHistDiff: # np.array_equal(enc1, enc2):
+            # enc2 = surfacePhaEncoding2[j]
+            if histDist < maxHistDiff:  # np.array_equal(enc1, enc2):
                 pairs.append((i, j))
 
     distlenp = len(pairs)
@@ -386,20 +389,54 @@ if __name__ == '__main__':
         sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad / 2)
         sphere1p = []
         sphere2p = []
+        points1 = np.empty((len(intArr), 3))
+        points2 = np.empty((len(intArr), 3))
+        ind = 0
+        for v in intArr:
+            p = pairs[v]  # minus 1 because scipy outputs with 1 based array
+            points1[ind] = surface1np[p[0]]
+            points2[ind] = surface2np[p[1]]
+            sphere1[p[0]].paint_uniform_color([0, 0, 0])
+            sphere2[p[1]].paint_uniform_color([0, 0, 0])
+            sphere1p.append(sphere1[p[0]])
+            sphere2p.append(sphere2[p[1]])
+            ind = ind + 1
+
+        visList = [pcd1, pcd2]
+        visList.extend(sphere1p)
+        visList.extend(sphere2p)
+        # visList.extend(spheresp1)
+        # visList.extend(spheresp2)
+        o3d.visualization.draw_geometries(visList)
+        # custom_draw_geometry([pcd1, pcd2,pcd1s,pcd2s])
+
+        c, R, t = MathTools.rigid_transform_3D(points1, points2, False)
+
+        pcd2.rotate(R, center=(0, 0, 0))
+        pcd2s.rotate(R, center=(0, 0, 0))
+
+        pcd2.translate(t)
+        pcd2s.translate(t)
+        surface2np = np.array(pcd2s.points)
+
+        sphere1 = create_spheres(np.array(pcd1s.points), [0, 0, 1], rad / 2)
+        sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad / 2)
+        sphere1p = []
+        sphere2p = []
+        ind = 0
         for v in intArr:
             p = pairs[v]  # minus 1 because scipy outputs with 1 based array
             sphere1[p[0]].paint_uniform_color([0, 0, 0])
             sphere2[p[1]].paint_uniform_color([0, 0, 0])
             sphere1p.append(sphere1[p[0]])
             sphere2p.append(sphere2[p[1]])
+            ind = ind + 1
 
         visList = [pcd1, pcd2]
         visList.extend(sphere1p)
         visList.extend(sphere2p)
-        #visList.extend(spheresp1)
-        #visList.extend(spheresp2)
         o3d.visualization.draw_geometries(visList)
-        # custom_draw_geometry([pcd1, pcd2,pcd1s,pcd2s])
+
         for ind in intArr:
             for ind2 in intArr:
                 mat[ind, ind2] = 0
