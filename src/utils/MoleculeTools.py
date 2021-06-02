@@ -1,17 +1,13 @@
-import sys
-sys.path.append("/data/shared/software/CDPKit/Python")
 import CDPL.Chem as Chem
 import CDPL.Base as Base
 import CDPL.Util as Util
 import CDPL.Math as Math
 import CDPL.Pharm as Pharm
+import CDPL.ForceField as ForceField
 import numpy as np
-from PharmacophoreTools import getPharmacophore
+from src.utils.PharmacophoreTools import getPharmacophore
 from collections import Iterable
-
-
-ALLOWED_ATOMS = [1, 6, 7, 8, 9, 15, 16, 17, 35, 53]
-SALT_METALS = [3, 11, 12, 19, 20]
+from src.utils.Constants import ALLOWED_ATOMS, SALT_METALS
 
 
 class SDFReader:
@@ -564,3 +560,21 @@ def calculateStandardProperties(mol):
         standardProperties['nrRotBonds'].append(Chem.getRotatableBondCount(m, False, False))
 
     return standardProperties
+
+
+def calculateElectrostaticPotentialEnergySurface(surfacePoints, molecule: Chem.BasicMolecule):
+    """
+    Calculate total coulomb energy at given point. Energies are calculated for a single positive and negative charge
+    against the partial charges of all atoms in the molecule.
+    :param surfacePoints:
+    :param molecule:
+    :return:
+    """
+    probes = []  # single positive and negative charged probe
+    potEnergies = []
+    chargeCalculator = ForceField.MMFF94ChargeCalculator()
+    partialCharges = Math.Vector3DArray()
+    chargeCalculator.calculate(molecule, partialCharges, True)
+
+
+

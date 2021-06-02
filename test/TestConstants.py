@@ -1,0 +1,8 @@
+# sample test protein
+PDB_CODE = '1A2K'  # any pdb code
+NUMBER_OF_ATOMS = 1598
+NUMBER_OF_ATOMS_WITHOUT_LIGAND = 1570
+NUMBER_OF_ATOMS_WITH_HYDROGENS_CLEANED = 3153
+
+PDB_CODES = ['1A2K', '1AY7', '1BUH', '1DFJ', '1FSK', '1I9R', '1OC0', '1Z0K', '1ZHH', '2DD8', '2JEL', '2X9A', '4HX3', '6DBG']
+DATA_FOLDER = 'data/benchmark5.5/structures/'

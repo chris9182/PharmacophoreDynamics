@@ -153,8 +153,8 @@ if __name__ == '__main__':
     mol1.fromFile("structures/" + name1 + ".pdb")
     mol2 = Protein()
     mol2.fromFile("structures/" + name2 + ".pdb")
-    mol1.prepare()
-    mol2.prepare()
+    mol1.prepareProteins()
+    mol2.prepareProteins()
     Chem.makeHydrogenDeplete(mol1)
     Chem.makeHydrogenDeplete(mol2)
     Biomol.FilePDBMolecularGraphWriter("compute/" + name1 + ".pdb").write(mol1)
@@ -384,6 +384,7 @@ if __name__ == '__main__':
         # gr.add_edges_from(edges)
         # clique = clique.max_clique(gr)
         print(len(intArr))
+
         print("setting colors")
         sphere1 = create_spheres(np.array(pcd1s.points), [0, 0, 1], rad / 2)
         sphere2 = create_spheres(np.array(pcd2s.points), [1, 0, 0], rad / 2)

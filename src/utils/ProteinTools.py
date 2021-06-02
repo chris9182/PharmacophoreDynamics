@@ -3,67 +3,15 @@ import CDPL.Biomol as Biomol
 import CDPL.Base as Base
 
 
-THREE_LETTER_AMINO_ACID_CODES = (
-    'ALA',
-    'ARG',
-    'ASN',
-    'ASP',
-    'ASX',  # asparagine or aspartic acid
-    'CYS',
-    'GLU',
-    'GLN',
-    'GLX',  # glutamine or glutamic acid
-    'GLY',
-    'HIS',
-    'ILE',
-    'LEU',
-    'LYS',
-    'MET',
-    'PHE',
-    'PRO',
-    'SER',
-    'THR',
-    'TRP',
-    'TYR',
-    'VAL'
-)
-
-
-SINGLE_LETTER_AMINO_ACID_CODES = (  # same order as three letter codes
-    'A',  # alanine
-    'R',  # arginine
-    'N',  # asparagine
-    'D',  # aspartic acid
-    'B',  # aspartic acid or asparagine
-    'C',  # cysteine
-    'E',  # glutamic acid
-    'Q',  # glutamine
-    'Z',  # glutamic acid or glutamine
-    'G',  # glycine
-    'H',  # histidin
-    'I',  # isoleucine
-    'L',  # leucine
-    'K',  # lysine
-    'M',  # methionine
-    'F',  # phenylalanine
-    'P',  # proline
-    'S',  # serine
-    'T',  # threonine
-    'W',  # tryptophan
-    'Y',  # tyrosine
-    'V',  # valine
-)
-
-
 def readPDBFromStream(stream: Base.IOStream):
-    from Protein import Protein
-    from MoleculeTools import sanitize_mol
+    from src.utils.Protein import Protein
+    # from src.utils.MoleculeTools import sanitize_mol
 
     r = Biomol.PDBMoleculeReader(stream)
-    mol = Chem.BasicMolecule()
-    r.read(mol)
-    sanitize_mol(mol, makeHydrogenComplete=True)
-    return Protein(mol)
+    p = Protein()
+    r.read(p)
+    # sanitize_mol(mol, makeHydrogenComplete=True)
+    return p
 
 
 def readPDBFromFile(path: str) -> Chem.BasicMolecule:
@@ -89,22 +37,22 @@ def readPDBFromRSCB(pdbCode: str) -> Chem.BasicMolecule:
 
 
 def writePDB(path: str, protein: Chem.BasicMolecule) -> None:
-    s = Base.FileIOStream(path)
-    w = Biomol.PDBMolecularGraphWriter(s)
+    Chem.makeHydrogenDeplete(protein)
+    w = Biomol.FilePDBMolecularGraphWriter(path)
     w.write(protein)
     w.close()
 
 
-def prepareProtein(protein, removeLigands=True, removeWater=True):
-    from MoleculeTools import sanitize_mol
-
-    sanitize_mol(self, makeHydrogenComplete=True)
-    Chem.generateHydrogen3DCoordinates(self, True)
-
-    if removeLigands:
-        self.removeLigands(removeWater=removeWater)
-
-    return protein
+# def prepareProtein(protein, removeLigands=True, removeWater=True):
+#     from src.utils.MoleculeTools import sanitize_mol
+#
+#     sanitize_mol(self, makeHydrogenComplete=True)
+#     Chem.generateHydrogen3DCoordinates(self, True)
+#
+#     if removeLigands:
+#         self.removeLigands(removeWater=removeWater)
+#
+#     return protein
 
 
 def getMoleculeFromAtom(atom: Chem.BasicAtom, protein: Chem.BasicMolecule) -> (Chem.BasicMolecule, list):

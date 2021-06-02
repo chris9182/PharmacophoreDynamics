@@ -31,7 +31,7 @@ def getShapeWithIncreasedRadius(mol, increase=0.5):
     return shape, shapeFunc
 
 
-path = '../Data/benchmark5.5/structures/'
+path = '../data/benchmark5.5/structures/'
 p = Protein()
 p.fromFile('{}1A2K_l_b.pdb'.format(path))
 # remove ligands and other crystalization artifacts

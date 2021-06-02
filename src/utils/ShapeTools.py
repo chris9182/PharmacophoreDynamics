@@ -1,7 +1,7 @@
 import CDPL.Shape as Shape
 import CDPL.Math as Math
 import CDPL.Chem as Chem
-from PharmacophoreTools import getPharmacophore
+from src.utils.PharmacophoreTools import getPharmacophore
 
 
 def getGaussianShapeOfMolecule(

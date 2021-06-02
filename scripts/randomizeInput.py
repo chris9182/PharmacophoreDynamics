@@ -6,7 +6,7 @@ import os
 def processProtein(inputPath, outputPath, clean=True):
     p = Protein()
     p.fromFile(inputPath)
-    p.prepare()
+    p.prepareProteins()
     p.makeRandomRotation(inplace=True)
     p.makeRandomTranslation(inplace=True)
     p.toFile(outputPath)

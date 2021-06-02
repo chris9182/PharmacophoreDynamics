@@ -11,6 +11,7 @@ def translate3DObject(object3D: Math.Vector3DArray, direction: Math.Vector3D) ->
     object3D.assign(object3D.toArray(False) + direction.toArray())
     return object3D
 
+
 # Implements Kabsch algorithm - best fit.
 # Supports scaling (umeyama)
 # Compares well to SA results for the same data.
@@ -25,7 +26,7 @@ def translate3DObject(object3D: Math.Vector3DArray, direction: Math.Vector3D) ->
 def rigid_transform_3D(A, B, scale):
     assert len(A) == len(B)
 
-    N = A.shape[0];  # total points
+    N = A.shape[0]  # total points
 
     centroid_A = np.mean(A, axis=0)
     centroid_B = np.mean(B, axis=0)
